@@ -2,10 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 import { getUsername } from "../utils";
 import type { ChatMessage } from "../types";
-import { insertChat, selectChat } from "../service";
+import { getBannedUsers, insertChat, selectChat } from "../service";
 
 export const useMessages = () => {
   const username = getUsername();
+
+  const { isBanned, refetch: refetchBannedUser } = useBannedUser();
+  console.log({ isBanned });
+
   const { data, refetch } = useQuery({
     queryKey: ["messages"],
     queryFn: async () => {
@@ -33,8 +37,9 @@ export const useMessages = () => {
       }
       await insertChat(username, message);
       refetch();
+      refetchBannedUser();
     },
-    [username, refetch]
+    [username, refetch, refetchBannedUser]
   );
 
   const messages = useMemo(() => {
@@ -44,5 +49,29 @@ export const useMessages = () => {
   return {
     addNewMessage,
     messages,
+    isBanned,
+  };
+};
+
+export const useBannedUser = () => {
+  const username = getUsername();
+  const { data, refetch } = useQuery({
+    queryKey: ["banned_user"],
+    queryFn: async () => {
+      if (!username) {
+        return [];
+      }
+      const data = await getBannedUsers(username);
+      return data;
+    },
+    staleTime: 0,
+  });
+  const isBanned = useMemo(() => {
+    return data && data.length > 0;
+  }, [data]);
+
+  return {
+    isBanned,
+    refetch,
   };
 };

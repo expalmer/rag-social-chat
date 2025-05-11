@@ -3,7 +3,7 @@ import { useMessages } from "./hooks";
 import { getOnlyHours } from "./utils";
 
 export function Chat({ username }: { username: string }) {
-  const { messages, addNewMessage } = useMessages();
+  const { messages, addNewMessage, isBanned } = useMessages();
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -29,6 +29,11 @@ export function Chat({ username }: { username: string }) {
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-100 pt-12">
       <h1 className="text-4xl">{username}</h1>
+      {isBanned && (
+        <div className="bg-red-500 text-white p-4 rounded-lg mt-4">
+          You are banned from this chat.
+        </div>
+      )}
       <div className="max-w-md w-full mt-8 bg-gray-50 shadow-md rounded-lg">
         <div className="p-4 h-80 overflow-y-auto flex flex-col gap-3 text-sm">
           {messages.map((message) => {
@@ -64,6 +69,7 @@ export function Chat({ username }: { username: string }) {
         <div className="p-4 border-t border-gray-300 bg-gray-100">
           <textarea
             ref={inputRef}
+            disabled={!!isBanned}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
