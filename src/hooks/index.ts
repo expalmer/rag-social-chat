@@ -7,7 +7,7 @@ import { getBannedUsers, insertChat, selectChat } from "../service";
 export const useMessages = () => {
   const username = getUsername();
 
-  const { isBanned, refetch: refetchBannedUser } = useBannedUser();
+  const { isBanned } = useBannedUser();
   console.log({ isBanned });
 
   const { data, refetch } = useQuery({
@@ -37,9 +37,8 @@ export const useMessages = () => {
       }
       await insertChat(username, message);
       refetch();
-      refetchBannedUser();
     },
-    [username, refetch, refetchBannedUser]
+    [username, refetch]
   );
 
   const messages = useMemo(() => {
@@ -65,6 +64,7 @@ export const useBannedUser = () => {
       return data;
     },
     staleTime: 0,
+    refetchInterval: 2000,
   });
   const isBanned = useMemo(() => {
     return data && data.length > 0;
